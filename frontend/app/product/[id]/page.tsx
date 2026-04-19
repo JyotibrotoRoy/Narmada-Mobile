@@ -40,8 +40,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ([key]) => key.toLowerCase() !== "brand" && key.toLowerCase() !== "model"
   );
 
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "91XXXXXXXXXX";
-  const callNumber = process.env.NEXT_PUBLIC_CALL_NUMBER ?? "+91XXXXXXXXXX";
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919954325690";
+  const callNumber = process.env.NEXT_PUBLIC_CALL_NUMBER ?? "+919954325690";
   const whatsappMessage = encodeURIComponent(
     `Hi Narmada Mobile Care, I'm interested in the ${product.name} priced at ${product.price}. Is it available?`
   );
