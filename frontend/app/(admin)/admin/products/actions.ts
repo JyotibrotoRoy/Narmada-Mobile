@@ -84,6 +84,31 @@ export async function deleteProductAction(id: string, storageFolder: string): Pr
   }
 }
 
+export async function updateProductAction(id: string, formData: FormData): Promise<ActionResult> {
+  try {
+    const supabase = getAdminSupabase();
+    const name = String(formData.get("name"));
+    const brand = String(formData.get("brand"));
+    const price = String(formData.get("price"));
+    const categoryId = String(formData.get("categoryId"));
+    const isFeatured = formData.get("isFeatured") === "on";
+    const specs = JSON.parse(String(formData.get("specs") || "{}"));
+
+    const { error } = await supabase
+      .from("products")
+      .update({ name, brand, price, category_id: categoryId, is_featured: isFeatured, specs })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/products");
+    revalidatePath("/catalog");
+    return { ok: true, message: "Product updated successfully!" };
+  } catch (error) {
+    return { ok: false, message: "Update failed: " + (error as Error).message };
+  }
+}
+
 export async function createProductAction(formData: FormData): Promise<ActionResult> {
   try {
     const supabase = getAdminSupabase();

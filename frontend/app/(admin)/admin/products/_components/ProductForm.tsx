@@ -3,10 +3,15 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createProductAction, listCategoriesAction } from "../actions";
+import { createProductAction, updateProductAction, listCategoriesAction } from "../actions";
 import type { CategoryOption } from "../_lib/schema";
+import type { AdminProductRow } from "../_lib/schema";
 
-export default function ProductForm() {
+interface ProductFormProps {
+  initialData: AdminProductRow | null;
+}
+
+export default function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -15,6 +20,18 @@ export default function ProductForm() {
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   const [specList, setSpecList] = useState([{ key: "", value: "" }]);
+
+  useEffect(() => {
+    if (initialData?.specs) {
+      const existingSpecs = Object.entries(initialData.specs).map(([key, value]) => ({
+        key,
+        value: String(value),
+      }));
+      setSpecList(existingSpecs.length > 0 ? existingSpecs : [{ key: "", value: "" }]);
+    } else {
+      setSpecList([{ key: "", value: "" }]);
+    }
+  }, [initialData]);
 
   const addSpecRow = () => setSpecList([...specList, { key: "", value: "" }]);
 
@@ -78,11 +95,19 @@ export default function ProductForm() {
 
   return (
     <form
+      key={initialData?.id || "new"}
       className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm"
       onSubmit={(event) => {
         event.preventDefault();
         const form = event.currentTarget;
         const formData = new FormData(form);
+
+
+        if (!initialData && selectedFiles.length === 0) {
+          toast.error("Please select images for the new product.");
+          return;
+        }
+        
         formData.delete("images");
         selectedFiles.forEach((file) => formData.append("images", file));
         formData.set("primaryImageIndex", String(selectedPrimary));
@@ -94,29 +119,37 @@ export default function ProductForm() {
         );
         formData.set("specs", JSON.stringify(finalSpecs));
 
-        if (selectedFiles.length === 0) {
+        /*if (selectedFiles.length === 0) {
           toast.error("Choose multiple images or select a folder first.");
           return;
-        }
+        }*/
 
         startTransition(async () => {
-          const result = await createProductAction(formData);
+          const result = initialData 
+            ? await updateProductAction(initialData.id, formData) // Call update
+            : await createProductAction(formData);               // Call create
+        
           if (!result.ok) {
             toast.error(result.message);
             return;
           }
-          setSpecList([{ key: "", value: "" }]);
-
+        
           toast.success(result.message);
-          form.reset();
-          setSelectedFiles([]);
-          setSelectedPrimary(0);
-          if (folderInputRef.current) folderInputRef.current.value = "";
+          
+          // If we were editing, clear the URL to exit edit mode
+          if (initialData) {
+            router.push("/admin/products");
+          } else {
+            // Reset only if it was a NEW product
+            form.reset();
+            setSelectedFiles([]);
+            setSpecList([{ key: "", value: "" }]);
+          }
           router.refresh();
         });
       }}
     >
-      <h2 className="text-lg font-semibold tracking-tight">Add Product</h2>
+      <h2 className="text-lg font-semibold tracking-tight">{initialData ? `Edit Product: ${initialData.name}` : "Add Product"}</h2>
       <p className="mt-1 text-sm text-zinc-600">
         Upload images to Supabase storage and save product details.
       </p>
@@ -126,6 +159,7 @@ export default function ProductForm() {
           <span className="font-medium text-zinc-700">Product Name</span>
           <input
             name="name"
+            defaultValue={initialData?.name}
             required
             className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
           />
@@ -135,6 +169,7 @@ export default function ProductForm() {
           <span className="font-medium text-zinc-700">Brand</span>
           <input
             name="brand"
+            defaultValue={initialData?.brand}
             required
             className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
           />
@@ -144,6 +179,7 @@ export default function ProductForm() {
           <span className="font-medium text-zinc-700">Price</span>
           <input
             name="price"
+            defaultValue={initialData?.price}
             required
             placeholder="₹59,999"
             className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
@@ -155,7 +191,6 @@ export default function ProductForm() {
           <select
             name="categoryId"
             required
-            defaultValue=""
             className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
           >
             <option value="" disabled>

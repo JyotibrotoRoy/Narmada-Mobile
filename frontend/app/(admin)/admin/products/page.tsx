@@ -41,7 +41,7 @@ async function getProducts(): Promise<AdminProductRow[]> {
   });
 }
 
-export default async function ProductsPage() {
+/*export default async function ProductsPage() {
   const products = await getProducts();
 
   return (
@@ -57,6 +57,42 @@ export default async function ProductsPage() {
         </header>
 
         <ProductForm />
+        <ProductTable products={products} />
+      </div>
+    </main>
+  );
+}*/
+
+export default async function ProductsPage(props: { 
+  searchParams: Promise<{ edit?: string }> 
+}) {
+  // 1. Get the 'edit' ID from the URL
+  const searchParams = await props.searchParams;
+  const editId = searchParams.edit;
+
+  // 2. Fetch the products
+  const products = await getProducts();
+
+  // 3. Find the specific product the user wants to edit
+  const editingProduct = editId 
+    ? products.find((p) => p.id === editId) || null 
+    : null;
+
+  return (
+    <main className="min-h-screen bg-zinc-50 px-5 py-8 sm:px-8 lg:px-10">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        <header>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+            Product Management
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600">
+            Create products, upload multiple images, and link to categories by UUID.
+          </p>
+        </header>
+
+        {/* 4. Pass the product data to the Form */}
+        <ProductForm initialData={editingProduct} />
+        
         <ProductTable products={products} />
       </div>
     </main>

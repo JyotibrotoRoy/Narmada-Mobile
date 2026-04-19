@@ -3,8 +3,9 @@
 import { useState, useMemo } from "react";
 import { Search, Pencil, Trash2, X } from "lucide-react";
 import type { AdminProductRow } from "../_lib/schema";
-import { toast } from "sonner"; // IT BELONGS HERE
+import { toast } from "sonner";
 import { deleteProductAction } from "../actions";
+import { useRouter } from "next/navigation";
 
 type ProductTableProps = {
   products: AdminProductRow[];
@@ -14,6 +15,7 @@ type ProductTableProps = {
 };
 
 export default function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleDelete = async (id: string, folder: string) => {
@@ -121,7 +123,10 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                     <td className="px-2 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button 
-                          onClick={() => onEdit?.(product)}
+                          onClick={() => {
+                            // This pushes "?edit=[id]" to the URL
+                            router.push(`/admin/products?edit=${product.id}`);
+                          }}
                           className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all"
                         >
                           <Pencil className="h-4 w-4" />
