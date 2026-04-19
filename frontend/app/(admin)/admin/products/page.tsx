@@ -20,16 +20,13 @@ async function getProducts(): Promise<AdminProductRow[]> {
   const supabase = getAdminSupabase();
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, brand, price, is_featured, created_at, categories(name)")
+    .select("id, name, brand, price, is_featured, created_at, storage_folder, specs, categories(name)")
     .order("created_at", { ascending: false })
     .limit(100);
 
   if (error) return [];
   return (data ?? []).map((row) => {
-    const categoryRelation = row.categories as { name: string }[] | null;
-    const category = Array.isArray(categoryRelation)
-      ? (categoryRelation[0] ?? null)
-      : null;
+    const categoryData = row.categories as any;
     return {
       id: row.id as string,
       name: row.name as string,
@@ -37,7 +34,9 @@ async function getProducts(): Promise<AdminProductRow[]> {
       price: row.price as string,
       is_featured: row.is_featured as boolean,
       created_at: row.created_at as string,
-      categoryName: category?.name ?? null,
+      categoryName: categoryData?.name ?? null,
+      storage_folder: row.storage_folder as string,
+      specs: row.specs as any,
     };
   });
 }

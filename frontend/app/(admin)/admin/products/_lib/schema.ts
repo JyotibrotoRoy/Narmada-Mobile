@@ -11,6 +11,8 @@ export type AdminProductRow = {
   categoryName: string | null;
   is_featured: boolean;
   created_at: string;
+  storage_folder: string; 
+  specs: any; // Or a more specific Record type if you prefer
 };
 
 export type ActionResult = {

@@ -51,6 +51,39 @@ export async function listCategoriesAction(): Promise<CategoryOption[]> {
   return (data ?? []) as CategoryOption[];
 }
 
+export async function deleteProductAction(id: string, storageFolder: string): Promise<ActionResult> {
+  try {
+    const supabase = getAdminSupabase();
+
+    // 1. Delete all images from the specific product folder in Storage
+    // We list the files first to get their names
+    const folderPath = `${BASE_PREFIX}/${storageFolder}`;
+    const { data: files, error: listError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .list(folderPath);
+
+    if (files && files.length > 0) {
+      const pathsToDelete = files.map((f) => `${folderPath}/${f.name}`);
+      const { error: storageError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .remove(pathsToDelete);
+        
+      if (storageError) throw new Error("Storage cleanup failed: " + storageError.message);
+    }
+
+    // 2. Delete the record from the database
+    const { error: dbError } = await supabase.from("products").delete().eq("id", id);
+    if (dbError) throw dbError;
+
+    revalidatePath("/admin/products");
+    revalidatePath("/catalog");
+    
+    return { ok: true, message: "Product and images deleted." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "Delete failed." };
+  }
+}
+
 export async function createProductAction(formData: FormData): Promise<ActionResult> {
   try {
     const supabase = getAdminSupabase();
