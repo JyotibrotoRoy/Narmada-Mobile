@@ -32,6 +32,7 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [sortBy, setSortBy] = useState<"none" | "low-high" | "high-low">("none");
+  const [searchQuery, setSearchQuery] = useState(""); // Added search query state
 
   useEffect(() => {
     let mounted = true;
@@ -66,7 +67,8 @@ export default function CatalogPage() {
     };
   }, []);
 
-  const filteredAndSortedProducts = useMemo(() => {
+  /*const filteredAndSortedProducts = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     const filtered =
       activeCategory === "all"
         ? products
@@ -91,7 +93,47 @@ export default function CatalogPage() {
         primary_image_index: 0,
       };
     });
-  }, [products, activeCategory, sortBy]);
+  }, [products, activeCategory, sortBy]); */
+
+  const filteredAndSortedProducts = useMemo(() => {
+    // 1. Normalize query: lowercase and remove ALL internal spaces
+    const cleanQuery = searchQuery.toLowerCase().replace(/\s+/g, "");
+  
+    const filtered = products.filter((product) => {
+      // Condition 1: Category Match (Keep this as is)
+      const matchesCategory = activeCategory === "all" || product.category_id === activeCategory;
+  
+      // 2. Normalize data: lowercase and remove ALL internal spaces
+      const cleanName = product.name.toLowerCase().replace(/\s+/g, "");
+      const cleanBrand = product.brand.toLowerCase().replace(/\s+/g, "");
+  
+      // 3. Search Match: Compare the space-free versions
+      const matchesSearch = 
+        cleanName.includes(cleanQuery) || 
+        cleanBrand.includes(cleanQuery);
+  
+      return matchesCategory && matchesSearch;
+    });
+  
+    const sorted = [...filtered];
+    if (sortBy === "low-high") {
+      sorted.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+    } else if (sortBy === "high-low") {
+      sorted.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+    }
+  
+    return sorted.map((product) => {
+      const firstImage = product.images?.[0] ?? "";
+      return {
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        images: firstImage ? [firstImage, ...(product.images ?? []).slice(1)] : [],
+        primary_image_index: 0,
+      };
+    });
+  }, [products, activeCategory, sortBy, searchQuery]); // Add searchQuery to the dependency array
 
   return (
     <main className="min-h-screen bg-[#f3f4f6] px-5 py-10 text-zinc-900 sm:px-8 lg:px-10">
@@ -101,6 +143,21 @@ export default function CatalogPage() {
             <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
               Discover Products
             </h1>
+            <div className="mb-6 relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search for products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-11 pr-4 rounded-2xl border border-zinc-300 bg-white text-sm text-zinc-900 outline-none ring-zinc-400 transition focus:ring-2"
+              />
+            </div>
+
             <p className="mt-2 text-sm text-zinc-600">
               Browse all arrivals by category with instant filtering.
             </p>
