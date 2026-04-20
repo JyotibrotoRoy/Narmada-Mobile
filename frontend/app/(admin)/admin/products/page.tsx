@@ -20,7 +20,7 @@ async function getProducts(): Promise<AdminProductRow[]> {
   const supabase = getAdminSupabase();
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, brand, price, is_featured, created_at, storage_folder, specs, categories(name)")
+    .select("id, name, brand, price, is_featured, created_at, storage_folder, specs, category_id, variants, categories(name)")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -37,6 +37,8 @@ async function getProducts(): Promise<AdminProductRow[]> {
       categoryName: categoryData?.name ?? null,
       storage_folder: row.storage_folder as string,
       specs: row.specs as any,
+      category_id: row.category_id, 
+      variants: row.variants || [],
     };
   });
 }
