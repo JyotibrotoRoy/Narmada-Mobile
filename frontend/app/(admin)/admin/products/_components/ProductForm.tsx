@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { createProductAction, updateProductAction, listCategoriesAction } from "../actions";
 import type { CategoryOption } from "../_lib/schema";
 import type { AdminProductRow } from "../_lib/schema";
+import AdminVariantEditor from "./AdminVariantEditor";
 
 interface ProductFormProps {
   initialData: AdminProductRow | null;
@@ -18,8 +19,25 @@ export default function ProductForm({ initialData }: ProductFormProps) {
   const [selectedPrimary, setSelectedPrimary] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const [currentCategoryId, setCurrentCategoryId] = useState(initialData?.category_id || "");
 
   const [specList, setSpecList] = useState([{ key: "", value: "" }]);
+
+  const needsVariants = useMemo(() => {
+    const selectedCat = categories.find((c) => c.id === currentCategoryId);
+    if (!selectedCat) return false;
+
+    const name = selectedCat.name.toLowerCase();
+  // Add any keyword here that should trigger the "Configuration" editor
+  return (
+    name.includes("phone") ||
+    name.includes("laptop") ||
+    name.includes("tablet") ||
+    name.includes("tv") ||
+    name.includes("monitor") ||
+    name.includes("ipad")
+  );
+}, [currentCategoryId, categories]);
 
   useEffect(() => {
     if (initialData?.specs) {
@@ -191,6 +209,8 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           <select
             name="categoryId"
             required
+            value={currentCategoryId} // Controlled value
+            onChange={(e) => setCurrentCategoryId(e.target.value)}
             className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
           >
             <option value="" disabled>
@@ -245,6 +265,24 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           ))}
         </div>
       </div>
+
+      {/* SMART VARIANT EDITOR SECTION */}
+      {initialData?.id && (
+        <div className="mt-8 pt-8 border-t border-zinc-100">
+          {needsVariants ? (
+            <AdminVariantEditor 
+              productId={initialData.id} 
+              initialVariants={initialData.variants} 
+            />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/30 p-6 text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-300">
+                Variants disabled for {categories.find(c => c.id === currentCategoryId)?.name || "this category"}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_1fr_180px]">
         <label className="flex flex-col gap-1.5 text-sm">

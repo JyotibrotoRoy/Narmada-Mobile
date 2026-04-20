@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, MessageCircle, Phone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ProductGallery from "./ProductGallery";
+import ProductDetails from "./ProductDetails";
 
 type ProductPdpRow = {
   id: string;
@@ -11,6 +12,7 @@ type ProductPdpRow = {
   price: string;
   images: string[];
   specs: Record<string, string> | null;
+  variants: any; // for variants
   category_id: string | null;
   categories: { name: string }[] | null;
 };
@@ -24,7 +26,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, brand, price, images, specs, category_id, categories(name)")
+    .select("id, name, brand, price, images, specs, variants, category_id, categories(name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -62,82 +64,37 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <ProductGallery images={product.images ?? []} productName={product.name} />
 
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.25)] sm:p-8">
-            <span className="inline-flex items-center rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-700">
-              {categoryName}
-            </span>
+          <div className="flex flex-col gap-8">
+  {/* 1. This handles the interactive Price, RAM selection, and Buttons */}
+  <ProductDetails product={product} />
 
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {product.name}
-            </h1>
-            <p className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-              {product.price}
-            </p>
-
-            <div className="mt-7">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500">
-                Specifications
-              </h2>
-              <dl className="mt-3 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2">
-                  <dt className="text-sm text-zinc-500">Brand</dt>
-                  <dd className="text-right text-sm font-medium text-zinc-900">{product.brand}</dd>
-                </div>
-                <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2">
-                  <dt className="text-sm text-zinc-500">Model</dt>
-                  <dd className="text-right text-sm font-medium text-zinc-900">{modelSpec}</dd>
-                </div>
-                {extraSpecs.map(([key, value]) => (
-                  <div key={key} className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2 last:border-0 last:pb-0">
-                    <dt className="text-sm text-zinc-500">{key}</dt>
-                    <dd className="text-right text-sm font-medium text-zinc-900">{String(value)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="mt-8 hidden gap-3 sm:flex">
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-semibold text-white transition hover:brightness-95"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </a>
-              <a
-                href={callHref}
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800"
-              >
-                <Phone className="h-4 w-4" />
-                Call Now
-              </a>
-            </div>
-          </section>
+  {/* 2. Keep your Specifications here (this part is static and fine) */}
+  <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.25)] sm:p-8">
+    <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-zinc-500">
+      Specifications
+    </h2>
+    <dl className="mt-3 space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2">
+        <dt className="text-sm text-zinc-500">Brand</dt>
+        <dd className="text-right text-sm font-medium text-zinc-900">{product.brand}</dd>
+      </div>
+      <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2">
+        <dt className="text-sm text-zinc-500">Model</dt>
+        <dd className="text-right text-sm font-medium text-zinc-900">{modelSpec}</dd>
+      </div>
+      {extraSpecs.map(([key, value]) => (
+        <div key={key} className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-2 last:border-0 last:pb-0">
+          <dt className="text-sm text-zinc-500">{key}</dt>
+          <dd className="text-right text-sm font-medium text-zinc-900">{String(value)}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+</div>
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/70 bg-white/80 p-3 backdrop-blur-md sm:hidden">
-        <div className="mx-auto flex w-full max-w-6xl gap-2">
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 text-sm font-semibold text-white"
-          >
-            <MessageCircle className="h-4 w-4" />
-            WhatsApp
-          </a>
-          <a
-            href={callHref}
-            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-sm font-semibold text-white"
-          >
-            <Phone className="h-4 w-4" />
-            Call
-          </a>
-        </div>
-      </div>
+      
     </main>
   );
 }

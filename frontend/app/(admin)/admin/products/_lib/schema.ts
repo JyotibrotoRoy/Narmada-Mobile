@@ -13,6 +13,8 @@ export type AdminProductRow = {
   created_at: string;
   storage_folder: string; 
   specs: any; // Or a more specific Record type if you prefer
+  category_id: string | null; 
+  variants?: any;
 };
 
 export type ActionResult = {
