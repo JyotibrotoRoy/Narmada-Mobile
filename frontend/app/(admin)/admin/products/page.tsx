@@ -20,7 +20,7 @@ async function getProducts(): Promise<AdminProductRow[]> {
   const supabase = getAdminSupabase();
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, brand, price, is_featured, created_at, storage_folder, specs, category_id, variants, categories(name)")
+    .select("id, name, brand, price, is_featured, is_latest, created_at, storage_folder, specs, category_id, variants, categories(name)")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -33,6 +33,7 @@ async function getProducts(): Promise<AdminProductRow[]> {
       brand: row.brand as string,
       price: row.price as string,
       is_featured: row.is_featured as boolean,
+      is_latest: row.is_latest as boolean,
       created_at: row.created_at as string,
       categoryName: categoryData?.name ?? null,
       storage_folder: row.storage_folder as string,
