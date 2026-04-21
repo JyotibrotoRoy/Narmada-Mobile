@@ -40,7 +40,7 @@ export default function RootLayout({
       <body className="antialiased selection:bg-black selection:text-white overflow-x-hidden">
         <Navbar />
         {/* pt-28 (112px) is the sweet spot to ensure the Hero starts exactly under the Navbar */}
-        <main className="pt-28">
+        <main className="pt-1">
           {children}
         </main>
       </body>

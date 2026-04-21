@@ -170,28 +170,7 @@ export default function HomePage({ featuredProducts }: HomePageProps) {
     <div className="min-h-full flex flex-col bg-zinc-50 text-zinc-950">
       <main className="flex-1 w-full max-w-6xl mx-auto px-5 sm:px-8 pb-24 pt-16 md:pt-24">
         {/* Hero */}
-        <section className="mb-20 md:mb-28">
-          <h1 className="max-w-4xl text-4xl font-semibold tracking-tighter text-balance leading-[0.98] sm:text-6xl md:text-7xl lg:text-8xl">
-            15+ Years of Trust
-          </h1>
-          <p className="mt-5 max-w-xl text-base text-zinc-600 text-balance sm:text-lg">
-            Genuine devices, authorized partnerships, and service you can rely
-            on—every visit.
-          </p>
-          <div className="mt-7 sm:mt-10">
-            <Link
-              href="/catalog"
-              className="group inline-flex items-center gap-2 rounded-full bg-zinc-900 px-5 py-3 text-xs font-medium text-white shadow-sm transition hover:bg-zinc-800 sm:px-7 sm:py-3.5 sm:text-sm"
-            >
-              Explore Catalog
-              <ArrowRight
-                className="h-4 w-4 opacity-70 transition-transform duration-300 group-hover:translate-x-0.5"
-                strokeWidth={1.75}
-                aria-hidden
-              />
-            </Link>
-          </div>
-        </section>
+        
 
         {/* Bento */}
         <section className="mb-20 md:mb-28">

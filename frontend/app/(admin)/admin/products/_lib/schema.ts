@@ -9,6 +9,8 @@ export type AdminProductRow = {
   brand: string;
   price: string;
   categoryName: string | null;
+  is_latest: boolean;
+  description?: string;
   is_featured: boolean;
   created_at: string;
   storage_folder: string; 

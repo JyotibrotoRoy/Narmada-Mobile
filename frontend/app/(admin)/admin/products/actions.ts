@@ -87,20 +87,29 @@ export async function deleteProductAction(id: string, storageFolder: string): Pr
 export async function updateProductAction(id: string, formData: FormData): Promise<ActionResult> {
   try {
     const supabase = getAdminSupabase();
+
+    const rawPrice = String(formData.get("price") || "");
+    const cleanPrice = parseInt(rawPrice.replace(/\D/g, ""), 10);
+
+    if (isNaN(cleanPrice)) throw new Error("Invalid price format.");
+
     const name = String(formData.get("name"));
     const brand = String(formData.get("brand"));
-    const price = String(formData.get("price"));
+    //const price = String(formData.get("price"));
     const categoryId = String(formData.get("categoryId"));
     const isFeatured = formData.get("isFeatured") === "on";
     const specs = JSON.parse(String(formData.get("specs") || "{}"));
+    const isLatest = formData.get("is_latest") === "on";
+    const description = String(formData.get("description") ?? "").trim();
 
     const { error } = await supabase
       .from("products")
-      .update({ name, brand, price, category_id: categoryId, is_featured: isFeatured, specs })
+      .update({ name, brand, price: cleanPrice, description, category_id: categoryId, is_featured: isFeatured, is_latest: isLatest, specs })
       .eq("id", id);
 
     if (error) throw error;
 
+    revalidatePath("/");
     revalidatePath("/admin/products");
     revalidatePath("/catalog");
     return { ok: true, message: "Product updated successfully!" };
@@ -113,18 +122,26 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
   try {
     const supabase = getAdminSupabase();
 
+    const rawPrice = String(formData.get("price") ?? "").trim();
+    const cleanPrice = parseInt(rawPrice.replace(/\D/g, ""), 10);
+
+    if (isNaN(cleanPrice)) return { ok: false, message: "Invalid price format." };
+
     const name = String(formData.get("name") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
-    const price = String(formData.get("price") ?? "").trim();
+    //const price = String(formData.get("price") ?? "").trim();
     const categoryId = String(formData.get("categoryId") ?? "").trim();
     const isFeatured = String(formData.get("isFeatured") ?? "") === "on";
     const requestedPrimary = Number(formData.get("primaryImageIndex") ?? 0);
     const specsRaw = String(formData.get("specs") ?? "{}");
+    const isLatest = formData.get("is_latest") === "on";
+    const description = String(formData.get("description") ?? "").trim();
+
     const imageFiles = formData
       .getAll("images")
       .filter((value): value is File => value instanceof File && value.size > 0);
 
-    if (!name || !brand || !price || !categoryId) {
+    if (!name || !brand || !cleanPrice || !categoryId) {
       return { ok: false, message: "Name, brand, price, and category are required." };
     }
 
@@ -184,12 +201,14 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
     const insertPayload: Record<string, unknown> = {
       name,
       brand,
-      price,
+      price: cleanPrice,
+      description,
       category_id: categoryRow.id,
       images: publicUrls,
       primary_image_index: primaryImageIndex,
       storage_folder: folderName,
       is_featured: isFeatured,
+      is_latest: isLatest,
       specs: specs,
     };
 
@@ -203,8 +222,8 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
       return { ok: false, message: `Product creation failed: ${insertError.message}` };
     }
 
-    revalidatePath("/admin/products");
     revalidatePath("/");
+    revalidatePath("/admin/products");
 
     return { ok: true, message: "Product created successfully." };
   } catch (error) {

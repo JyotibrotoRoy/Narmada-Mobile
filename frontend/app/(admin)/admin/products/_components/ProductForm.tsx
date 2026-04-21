@@ -204,6 +204,17 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           />
         </label>
 
+        <label className="flex flex-col gap-1.5 text-sm col-span-2">
+  <span className="font-medium text-zinc-700">Short Description (for Carousel)</span>
+  <textarea
+    name="description"
+    defaultValue={initialData?.description}
+    placeholder="e.g., All-out Pro. Hello, Apple Intelligence."
+    rows={2}
+    className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 outline-none ring-zinc-300 focus:ring-2 resize-none"
+  />
+</label>
+
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-zinc-700">Category</span>
           <select
@@ -345,6 +356,26 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           </p>
         </div>
       ) : null}
+
+      {/* NEW: Promote to Latest Card */}
+<div className="mt-6 flex items-center space-x-3 p-4 border rounded-2xl bg-zinc-50 border-zinc-200">
+  <input 
+    type="checkbox" 
+    name="is_latest" 
+    id="is_latest"
+    // IMPORTANT: Changed 'product' to 'initialData' to match your component's props
+    defaultChecked={initialData?.is_latest || false}
+    className="h-5 w-5 rounded-md border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+  />
+  <div className="flex flex-col">
+    <label htmlFor="is_latest" className="text-sm font-semibold text-zinc-900">
+      Promote to "The Latest"
+    </label>
+    <p className="text-xs text-zinc-500">
+      This will place the product in the horizontal carousel on the homepage.
+    </p>
+  </div>
+</div>
 
       <label className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-zinc-700">
         <input
