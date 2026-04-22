@@ -383,7 +383,9 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           name="isFeatured"
           className="size-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-300"
         />
-        Mark as featured product
+        <span className="text-sm font-medium text-zinc-700">
+    Promote to "Sweet Spot" (Budget Friendly)
+  </span>
       </label>
 
       <button

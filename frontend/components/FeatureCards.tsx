@@ -1,27 +1,26 @@
-import React from 'react';
-import Link from 'next/link';
+"use client";
 
-import Image from "next/image"; // Import the Next.js Image component
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import Image from "next/image";
 
 interface HeroFeatureProps {
   title: string;
   subtitle: string;
   image: string;
   targetPage: string;
-  isPriority?: boolean; // Add a prop to prioritize the first image
+  isPriority?: boolean;
 }
 
 const HeroFeature: React.FC<HeroFeatureProps> = ({ title, subtitle, image, targetPage, isPriority }) => {
   return (
-    <div className="relative min-w-full h-screen md:h-[90vh] overflow-hidden bg-black flex flex-col items-center text-center snap-start">
-      
-      {/* OPTIMIZED IMAGE COMPONENT */}
+    <div className="relative min-w-full h-screen md:h-[90vh] overflow-hidden bg-black flex flex-col items-center text-center snap-start shrink-0">
       <Image 
         src={image} 
         alt={title} 
-        fill // This replaces the absolute inset-0 logic
-        priority={isPriority} // Loads this image immediately without waiting
-        quality={75} // Professional balance between size and quality
+        fill 
+        priority={isPriority} 
+        quality={75} 
         className="object-cover object-bottom z-0"
         sizes="100vw"
       />
@@ -46,24 +45,60 @@ const HeroFeature: React.FC<HeroFeatureProps> = ({ title, subtitle, image, targe
   );
 };
 
-// In your main export, tell the first card to be a priority:
 export default function FeatureCards() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const features = [
+    {
+      title: "iPhone 17 Pro",
+      subtitle: "Hello, Apple Intelligence.",
+      image: "/2.png",
+      targetPage: "/catalog",
+    },
+    {
+      title: "Galaxy S26 Ultra",
+      subtitle: "Galaxy AI",
+      image: "/1.png",
+      targetPage: "/catalog",
+    },
+    // Add more here, the logic will handle it automatically
+  ];
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        
+        // Logic: If at the end, jump back to start, else scroll to next
+        const isAtEnd = Math.ceil(scrollLeft + clientWidth) >= scrollWidth;
+        
+        scrollRef.current.scrollTo({
+          left: isAtEnd ? 0 : scrollLeft + clientWidth,
+          behavior: 'smooth'
+        });
+      }
+    }, 3000); // 2 Seconds
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
   return (
-    <section className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar bg-black">
-      <HeroFeature 
-        title="iPhone 17 Pro"
-        subtitle="Hello, Apple Intelligence."
-        image="/2.png" 
-        targetPage="/catalog"
-        isPriority={true} // Priority loading for the first slide
-      />
-      <HeroFeature 
-        title="Galaxy S26 Ultra"
-        subtitle="Galaxy AI"
-        image="/1.png" 
-        targetPage="/catalog"
-        isPriority={false}
-      />
+    <section 
+      ref={scrollRef}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar bg-black cursor-grab active:cursor-grabbing"
+    >
+      {features.map((feature, index) => (
+        <HeroFeature 
+          key={feature.title}
+          {...feature}
+          isPriority={index === 0}
+        />
+      ))}
     </section>
   );
 }

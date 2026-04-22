@@ -1,45 +1,50 @@
-import { supabase, type FeaturedProductRow } from "@/lib/supabase";
-import HomePage from "@/components/HomePage";
+import { supabase } from "@/lib/supabase";
 import HeroSection from './HeroSection';
 import FeatureCards from '../components/FeatureCards';
 import LatestSection from '../components/LatestSection';
+import BudgetSection from '@/components/BudgetSection'; // The new section
 import Footer from '../components/Footer';
+
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, name, brand, price, images, primary_image_index")
-    .eq("is_featured", true)
-    .limit(4);
+  // 1. Parallel Fetching: Fetch both buckets of data at the same time
+  const [budgetRes, latestRes] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, brand, price, images, primary_image_index, description") // Added description
+      .eq("is_featured", true)
+      .limit(10), // Increased limit for carousel
+    supabase
+      .from("products")
+      .select("id, name, brand, price, images, primary_image_index, description")
+      .eq("is_latest", true)
+      .limit(10)
+  ]);
 
-  const { data: latestData, error: latestError } = await supabase
-    .from("products")
-    .select("id, name, brand, price, images, primary_image_index, description")
-    .eq("is_latest", true) // Use the new column here
-    .limit(8);
+  // 2. Error handling & Data Mapping
+  if (budgetRes.error) console.error("Budget Query Error:", budgetRes.error.message);
+  if (latestRes.error) console.error("Latest Query Error:", latestRes.error.message);
 
-    console.log("--- DEBUG START ---");
-    console.log("Latest Data Length:", latestData?.length || 0);
-    if (latestError) console.error("Supabase Error:", latestError.message);
-    console.log("--- DEBUG END ---");
+  const budgetProducts = budgetRes.data || [];
+  const latestProducts = latestRes.data || [];
 
-  const featuredProducts: FeaturedProductRow[] =
-    !error && data?.length ? (data as FeaturedProductRow[]) : [];
+  return (
+    <main className="min-h-screen bg-white">
+      {/* Brand Hero */}
+      <HeroSection />
 
-  const latestProducts = 
-    !latestError && latestData?.length ? latestData : [];
+      {/* Flagship Promo Cards */}
+      <FeatureCards />
+      
+      {/* 3. The "Latest" Carousel */}
+      <LatestSection products={latestProducts} />
 
-    return (
-      <main className="min-h-screen">
-        {/* 1. Hero Section: This occupies the top viewport to grab attention immediately */}
-        <HeroSection />
-        <FeatureCards />
-        <LatestSection products={latestProducts} />
-  
-        {/* 2. Featured Content: The rest of your landing page logic */}
-        <HomePage featuredProducts={featuredProducts} />
-        <Footer />
-      </main>
-    );
-  }
+      {/* 4. The "Sweet Spot" Carousel (Replacing HomePage grid) */}
+      <BudgetSection products={budgetProducts} />
+      
+      {/* 5. Footer */}
+      <Footer />
+    </main>
+  );
+}

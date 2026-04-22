@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
       ...supabaseImageRemotePatterns(),
       {
         protocol: "https" as const,
-        hostname: "images.unsplash.com",
+        hostname: "https://oxrohudrlaxlswvcmwwc.supabase.co",
         pathname: "/**",
       },
     ],

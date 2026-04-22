@@ -3,13 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Added for redirection
-import { Menu, X, Search } from "lucide-react"; // Added Search icon
+import { useRouter } from "next/navigation";
+import { Menu, X, Search } from "lucide-react";
 
+// Updated NavLinks with IDs from your Categories table
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/catalog", label: "Catalog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/catalog?brand=Apple", label: "iPhone" },
+  { href: "/catalog?brand=Samsung", label: "Samsung" },
+  { href: "/catalog?brand=Mi", label: "Mi" },
+  { href: "/catalog?brand=Nothing", label: "Nothing" },
+  { href: "/catalog?category=f74f0806-c7ab-4863-9eaf-2fe256e8dfbc", label: "Watches" }, // Wearables
+  { href: "/catalog?category=88bf0815-33f2-439c-0a8543e9d67d", label: "AirPods" }, // Audio & Multimedia
+  { href: "/catalog?category=11783b68-c293-4d59-a0ea-f0da7c82683e", label: "Accessories" }, // Mobile Accessories
+  { href: "/contact", label: "Call Us" }, // Call link
 ];
 
 export default function Navbar() {
@@ -21,7 +28,6 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Logic: Redirect to catalog with 'q' parameter
       router.push(`/catalog?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
       setSearchQuery("");
@@ -31,40 +37,44 @@ export default function Navbar() {
   return (
     <>
       <nav className="glass-nav px-4 py-2.5 sm:px-6 sm:py-3 sticky top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 lg:gap-4">
           
           {/* Logo Section */}
-          <Link href="/" className={`group flex items-center gap-2 sm:gap-3 ${isSearchOpen ? 'hidden md:flex' : 'flex'}`}>
-            <div className="relative h-9 w-9 overflow-hidden rounded-lg sm:h-12 sm:w-12">
+          <Link href="/" className={`group flex items-center gap-2 sm:gap-3 shrink-0 ${isSearchOpen ? 'hidden md:flex' : 'flex'}`}>
+            <div className="relative h-9 w-9 overflow-hidden rounded-lg sm:h-11 sm:w-11">
               <Image
                 src="/narmada_logo.jpeg"
                 alt="Narmada Mobile Care Logo"
                 fill
                 className="object-contain transition-transform group-hover:scale-105"
-                sizes="(max-width: 768px) 36px, 48px"
+                sizes="(max-width: 768px) 36px, 44px"
                 priority
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold leading-none tracking-tight sm:text-lg sm:tracking-tighter">
+              <span className="text-[12px] font-bold leading-none tracking-tight sm:text-base">
                 Narmada Mobile Care
               </span>
-              <span className="text-[8px] font-medium uppercase tracking-[0.16em] text-gray-400 sm:text-[10px] sm:tracking-widest">
+              <span className="text-[7px] font-medium uppercase tracking-widest text-gray-400 sm:text-[9px]">
                 Northeast India's Leader
               </span>
             </div>
           </Link>
 
-          {/* Center Links (Hidden when search is active on desktop) */}
-          <div className={`hidden gap-8 text-sm font-medium text-gray-500 md:flex ${isSearchOpen ? 'md:hidden' : 'md:flex'}`}>
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="transition hover:text-black">
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {/* Center Links - Tightened for 9 items */}
+          <div className={`hidden gap-4 lg:gap-6 text-[13px] font-semibold text-gray-500 xl:text-sm md:flex ${isSearchOpen ? 'md:hidden' : 'md:flex'}`}>
+  {navLinks.map((link) => (
+    <Link 
+      key={link.href} 
+      href={link.href} 
+      className="transition hover:text-black whitespace-nowrap"
+    >
+      {link.label}
+    </Link>
+  ))}
+</div>
 
-          {/* Search Logic Replacement */}
+          {/* Search Logic */}
           <div className={`flex items-center gap-2 ${isSearchOpen ? 'flex-1 justify-end' : ''}`}>
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="flex w-full max-w-md items-center gap-2 rounded-full bg-zinc-100 px-4 py-2 animate-in slide-in-from-right-4 duration-300">
@@ -84,7 +94,7 @@ export default function Navbar() {
             ) : (
               <button 
                 onClick={() => setIsSearchOpen(true)}
-                className="inline-flex size-9 items-center justify-center rounded-full transition hover:bg-zinc-100 sm:size-11"
+                className="inline-flex size-9 items-center justify-center rounded-full transition hover:bg-zinc-100"
               >
                 <Search className="size-5 text-zinc-800" />
               </button>
@@ -95,7 +105,6 @@ export default function Navbar() {
               type="button"
               onClick={() => setMobileOpen(true)}
               className={`inline-flex size-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-800 md:hidden ${isSearchOpen ? 'hidden' : 'flex'}`}
-              aria-label="Open menu"
             >
               <Menu className="size-4" />
             </button>
@@ -103,40 +112,36 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Drawer (Cleaned up Shop Now here too) */}
-      {mobileOpen ? (
+      {/* Mobile Drawer */}
+      {mobileOpen && (
         <div className="fixed inset-0 z-[60] bg-black/35 md:hidden" onClick={() => setMobileOpen(false)}>
           <div className="absolute right-0 top-0 flex h-full w-[78%] max-w-[300px] flex-col bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm font-semibold text-zinc-900">Menu</p>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-700"
-              >
+              <button onClick={() => setMobileOpen(false)} className="size-8 flex items-center justify-center rounded-full border border-zinc-100">
                 <X className="size-4" />
               </button>
             </div>
 
-            <div className="flex flex-1 flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-            
-            <div className="mt-auto pt-6 border-t border-zinc-100 text-[10px] text-zinc-400 uppercase tracking-widest text-center">
-              Narmada Mobile Care © 2026
-            </div>
+            <div className="flex flex-1 flex-col gap-1">
+  {navLinks.map((link) => (
+    <Link
+      key={link.href}
+      href={link.href}
+      onClick={() => setMobileOpen(false)}
+      className={`rounded-xl px-3 py-2 text-[15px] font-medium transition ${
+        link.label === "Call Us" 
+          ? "text-blue-600 font-bold bg-blue-50 mt-2" 
+          : "text-zinc-800 hover:bg-zinc-50"
+      }`}
+    >
+      {link.label}
+    </Link>
+  ))}
+</div>
           </div>
         </div>
-      ) : null}
+      )}
     </>
   );
 }
