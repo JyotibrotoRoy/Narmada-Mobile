@@ -12,18 +12,31 @@ export default function ProductDetails({ product }: { product: any }) {
   // Ensure variants is always an array
   const variants = (product.variants as Variant[]) || [];
   
-  // 1. FIXED: The fallback object must match the 'Variant' type { label, price }
+  // The fallback object must match the 'Variant' type { label, price }
   const [selectedVariant, setSelectedVariant] = useState<Variant>(
     variants.length > 0 
       ? variants[0] 
       : { label: "Standard", price: Number(product.price) || 0 }
   );
 
+  // --- DYNAMIC PRICING LOGIC ---
+  const rawVariantPrice = String(selectedVariant.price || 0);
+  const currentPrice = parseInt(rawVariantPrice.replace(/\D/g, ""), 10) || 0;
+  
+  // NOTE: If your variants have specific MRPs in the future, you'll need to pull it from selectedVariant. 
+  // For now, we assume the base product MRP applies, or we disable it if the variant price exceeds the base MRP.
+  const baseMrp = product.mrp;
+  const hasMrp = baseMrp && baseMrp > currentPrice;
+  const discountPercentage = hasMrp 
+    ? Math.round(((baseMrp - currentPrice) / baseMrp) * 100) 
+    : 0;
+  // -----------------------------
+
   const whatsappNumber = "919954325690";
 
-  // 2. FIXED: Use the universal label for the message
+  // Use the universal label for the message
   const whatsappMessage = encodeURIComponent(
-    `Hi Narmada Mobile Care, I'm interested in the ${product.name} (${selectedVariant.label}) priced at ₹${selectedVariant.price.toLocaleString("en-IN")}. Is it available?`
+    `Hi Narmada Mobile Care, I'm interested in the ${product.name} (${selectedVariant.label}) priced at ₹${currentPrice.toLocaleString("en-IN")}. Is it available?`
   );
 
   const whatsappHref = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
@@ -40,9 +53,31 @@ export default function ProductDetails({ product }: { product: any }) {
           {product.name}
         </h1>
 
-        <p className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-          ₹{selectedVariant.price.toLocaleString("en-IN")}
-        </p>
+        {/* --- INJECTED DYNAMIC PRICING BLOCK --- */}
+        <div className="mt-4 flex items-baseline gap-3 flex-wrap mb-2">
+          <span className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+            {/* Render Prefix if it exists */}
+            {product.price_prefix && (
+              <span className="font-semibold text-2xl text-zinc-500 mr-2">
+                {product.price_prefix}
+              </span>
+            )}
+            ₹{currentPrice.toLocaleString("en-IN")}
+          </span>
+          
+          {/* Render MRP and Discount ONLY if valid */}
+          {hasMrp && (
+            <div className="flex items-center gap-3">
+              <span className="text-xl font-medium text-zinc-400 line-through">
+                MRP ₹{baseMrp.toLocaleString('en-IN')}
+              </span>
+              <span className="bg-[#e3000f] text-white text-sm font-bold px-3 py-1 rounded-md">
+                {discountPercentage}% Off
+              </span>
+            </div>
+          )}
+        </div>
+        {/* -------------------------------------- */}
 
         {/* CONFIGURATION SELECTION */}
         {variants.length > 1 && (

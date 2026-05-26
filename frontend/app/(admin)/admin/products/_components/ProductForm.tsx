@@ -193,16 +193,47 @@ export default function ProductForm({ initialData }: ProductFormProps) {
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-700">Price</span>
-          <input
-            name="price"
-            defaultValue={initialData?.price}
-            required
-            placeholder="₹59,999"
-            className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
-          />
-        </label>
+        <div className="col-span-2 grid gap-4 sm:grid-cols-3">
+          
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-zinc-700">Price Label</span>
+            <select
+              name="price_prefix"
+              defaultValue={initialData?.price_prefix ?? ""}
+              className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2 text-zinc-600"
+            >
+              <option value="">None</option>
+              <option value="Starting at">Starting at</option>
+              <option value="From">From</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-zinc-700">Selling Price (₹)</span>
+            <input
+              name="price"
+              type="number"
+              defaultValue={initialData?.price}
+              required
+              min="0"
+              placeholder="59999"
+              className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-zinc-700">MRP (₹) (Optional)</span>
+            <input
+              name="mrp"
+              type="number"
+              defaultValue={initialData?.mrp ?? ""}
+              min="0"
+              placeholder="65999"
+              className="h-10 rounded-xl border border-zinc-200 bg-zinc-50 px-3 outline-none ring-zinc-300 focus:ring-2"
+            />
+          </label>
+          
+        </div>
 
         <label className="flex flex-col gap-1.5 text-sm col-span-2">
   <span className="font-medium text-zinc-700">Short Description (for Carousel)</span>

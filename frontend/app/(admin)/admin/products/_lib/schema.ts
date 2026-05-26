@@ -17,6 +17,8 @@ export type AdminProductRow = {
   specs: any; // Or a more specific Record type if you prefer
   category_id: string | null; 
   variants?: any;
+  mrp?: number | null;
+  price_prefix?: string | null;
 };
 
 export type ActionResult = {

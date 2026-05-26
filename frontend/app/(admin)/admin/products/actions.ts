@@ -93,6 +93,14 @@ export async function updateProductAction(id: string, formData: FormData): Promi
 
     if (isNaN(cleanPrice)) throw new Error("Invalid price format.");
 
+    // NEW: Extract and clean MRP using the same regex as price
+    const rawMrp = String(formData.get("mrp") || "").trim();
+    const mrp = rawMrp ? parseInt(rawMrp.replace(/\D/g, ""), 10) : null;
+
+    // NEW: Extract Prefix
+    const rawPrefix = String(formData.get("price_prefix") || "").trim();
+    const price_prefix = rawPrefix ? rawPrefix : null;
+
     const name = String(formData.get("name"));
     const brand = String(formData.get("brand"));
     //const price = String(formData.get("price"));
@@ -104,7 +112,7 @@ export async function updateProductAction(id: string, formData: FormData): Promi
 
     const { error } = await supabase
       .from("products")
-      .update({ name, brand, price: cleanPrice, description, category_id: categoryId, is_featured: isFeatured, is_latest: isLatest, specs })
+      .update({ name, brand, price: cleanPrice, description, category_id: categoryId, is_featured: isFeatured, is_latest: isLatest, specs, mrp, price_prefix })
       .eq("id", id);
 
     if (error) throw error;
@@ -126,6 +134,14 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
     const cleanPrice = parseInt(rawPrice.replace(/\D/g, ""), 10);
 
     if (isNaN(cleanPrice)) return { ok: false, message: "Invalid price format." };
+
+    // NEW: Extract and clean MRP
+    const rawMrp = String(formData.get("mrp") ?? "").trim();
+    const mrp = rawMrp ? parseInt(rawMrp.replace(/\D/g, ""), 10) : null;
+
+    // NEW: Extract Prefix
+    const rawPrefix = String(formData.get("price_prefix") ?? "").trim();
+    const price_prefix = rawPrefix ? rawPrefix : null;
 
     const name = String(formData.get("name") ?? "").trim();
     const brand = String(formData.get("brand") ?? "").trim();
@@ -202,6 +218,8 @@ export async function createProductAction(formData: FormData): Promise<ActionRes
       name,
       brand,
       price: cleanPrice,
+      mrp: mrp,
+      price_prefix: price_prefix,
       description,
       category_id: categoryRow.id,
       images: publicUrls,
